@@ -1,0 +1,7 @@
+{
+    "go.autocompleteUnimportedPackages": true,
+    "go.lintOnSave": "workspace",
+    "go.lintTool": "golangci-lint",
+    "go.useLanguageServer": true,
+    "go.lintFlags": ["--config", ".golangci.yml"]
+}
