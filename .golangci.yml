@@ -1,0 +1,91 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - copyloopvar
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - exhaustive
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - goprintffuncname
+    - gosec
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - mnd
+    - nakedret
+    - noctx
+    - nolintlint
+    - revive
+    - rowserrcheck
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+
+  # don't enable:
+  # - whitespace
+  # - asciicheck
+  # - gochecknoglobals
+  # - gocognit
+  # - godot
+  # - godox
+  # - err113
+  # - nestif
+  # - prealloc
+  # - testpackage
+  # - wsl
+
+  settings:
+    lll:
+      line-length: 140
+    depguard:
+      rules:
+        main:
+          files:
+            - "$all"
+            - "!$test"
+          allow:
+            - "$gostd"
+            - github.com/
+        tests:
+          files:
+            - "$test"
+          allow:
+            - "$gostd"
+            - github.com/
+
+  exclusions:
+    generated: lax
+    # keep the v1 default exclusions
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: _test\.go
+        linters:
+          - dupl
+          - funlen
+          - goconst
+      # public API since v0: renaming EOS to ErrEOS would break callers
+      - path: slicereader\.go
+        linters:
+          - revive
+          - staticcheck
+        text: "error var EOS should have name of the form ErrFoo"
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
