@@ -1,0 +1,48 @@
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - main
+      - build/*
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "41 10 * * 0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # Install the Go version from go.mod, so CodeQL builds with the same
+      # toolchain as the build workflow instead of the runner's preinstalled Go.
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - name: Initialize
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+        with:
+          languages: go
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+      - name: Analysis
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+        with:
+          # keep the category of the former language matrix, so results stay
+          # comparable with earlier analyses
+          category: .github/workflows/codeql.yml:codeql/language:go
