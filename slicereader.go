@@ -26,7 +26,7 @@ func NewSliceReader(slice []interface{}) *SliceReader {
 
 // Len returns the number of the unread elements of the slice.
 func (sr *SliceReader) Len() int {
-	return int(sr.Size() - int64(sr.i))
+	return int(sr.Size() - sr.i)
 }
 
 // Size returns the original length of the underlying slice.
