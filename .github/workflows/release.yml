@@ -1,0 +1,54 @@
+# Shared release flow, see https://github.com/spali/.github
+# A library: no build job, the releases carry only the notes and the tag.
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+      - "!v*-next"
+      - "!v*-pr.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Exception version for the draft, only on main (e.g. 2.0.0-rc.1). Empty: computed from the labels."
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  prepare:
+    permissions:
+      contents: write # update the draft release
+      pull-requests: read
+      actions: read # the tag check waits for the run on main
+    uses: spali/.github/.github/workflows/release-prepare.yml@9888a84c06b855dc130ff3f351439557da9be7e3 # feat/release-without-assets
+    with:
+      version: ${{ inputs.version }}
+
+  publish:
+    needs: prepare
+    permissions:
+      contents: write # create and edit releases
+      pull-requests: write # comment the dev build link
+      id-token: write # sign the attestation
+      attestations: write # store the attestation
+      artifact-metadata: write # create the artifact storage record
+    uses: spali/.github/.github/workflows/release-publish.yml@9888a84c06b855dc130ff3f351439557da9be7e3 # feat/release-without-assets
+    with:
+      kind: ${{ needs.prepare.outputs.kind }}
+      version: ${{ needs.prepare.outputs.version }}
+      tag: ${{ needs.prepare.outputs.tag }}
+      sha: ${{ needs.prepare.outputs.sha }}
+      pr: ${{ needs.prepare.outputs.pr }}
+      draft-id: ${{ needs.prepare.outputs.draft-id }}
+      assets: false
